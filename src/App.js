@@ -1,5 +1,12 @@
+import "./App.css";
+import Form from "./components/form/form.component";
+
 function App() {
-  return <h1>Hello</h1>
+  return (
+    <div className="container">
+      <Form />
+    </div>
+  )
 }
 
 export default App;
