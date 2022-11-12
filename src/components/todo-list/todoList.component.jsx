@@ -58,7 +58,7 @@ const TodoList = () => {
                 <TextInput 
                 placeholder="Add a new todo" 
                 handleInputSubmit={(e) => {
-                    if(e.code === 'Enter') {
+                    if(e.code === 'Enter' && inputFieldValue) {
                         todosContext.insertTodo(inputFieldValue);
                         todosContext.getAllTodos();
                         setRefresh(true);
