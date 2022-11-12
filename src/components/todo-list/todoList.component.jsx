@@ -7,9 +7,6 @@ import { TodosContext} from "../../services/todos/todos.context";
 
 const TodoListContainer = styled.div`
 `
-const handleFilterSelect = (e) => {
-    console.log(e.target.textContent)
-}
 
 const handleAddNewTodoItem = (e, itemTodo) => {
     // Trigger the service to update the list of items for the UI
@@ -23,32 +20,71 @@ const handleAddNewTodoItem = (e, itemTodo) => {
 const TodoList = () => {
     const [inputFieldValue, setInputFieldValue] = useState("")
     const todosContext = useContext(TodosContext);
-    const [itemsList, setItemsList] = useState([])
+    const [itemsList, setItemsList] = useState([]);
+    const [filter, setFilter] = useState("All");
+    const [refresh, setRefresh] = useState(false);
 
     useEffect(() => {
-        todosContext.getAllTodos()
-    }, [])
+        fetch("http://localhost:8080/listTodos").then(response => response.json())
+        .then(response => {
+            setRefresh(false);
+            if (filter === "All") {
+                setItemsList(response);
+            } else if(filter === "Complete") {
+                setItemsList(response.filter(item => item.iscomplete));
+            } else if(filter === "Incomplete") {
+                setItemsList(response.filter(item => !item.iscomplete));
+            }
+        }).catch(e => {
+            // Error handling
+        })
 
+    }, [filter, refresh])
+
+    const handleDelete = (id) => {
+        todosContext.deleteTodoItem(id)
+        todosContext.getAllTodos();
+        setRefresh(true);
+    }
+
+    const applyFilter = (e) => {
+        setFilter(e.target.textContent);
+    }
     return  <>
                 {
-                    todosContext.isLoading && todosContext == null? (<h1>Loading...</h1>)
+                    todosContext.isLoading? (<h1>Loading...</h1>)
                 : 
                 <>
                 <TextInput 
                 placeholder="Add a new todo" 
-                handleInputSubmit={(e) => {setItemsList([...itemsList, {id: 24, description: inputFieldValue, isComplete: false}])}}
+                handleInputSubmit={(e) => {
+                    if(e.code === 'Enter') {
+                        todosContext.insertTodo(inputFieldValue);
+                        todosContext.getAllTodos();
+                        setRefresh(true);
+                    } else {
+                    }
+                }}
                 handleInputChange={(e) => {setInputFieldValue(e.target.value)}}/>
                 <TodoListContainer>
-                    {todosContext.todosList.map(todoItem => {
-                        return <TodoItem 
+                    {itemsList.map(todoItem => {
+                        return <TodoItem
                             description={todoItem.description} 
-                            isComplete={todoItem.isComplete} 
-                            key={todoItem.id} i
-                            d={todoItem.id}
+                            isComplete={todoItem.iscomplete}
+                            handleDelete={handleDelete} 
+                            handleToggle={(e) => {
+                                if(e.target.checked) {
+                                    todosContext.markTodoComplete(e)
+                                } else {
+                                    todosContext.markTodoIncomplete(e)
+                                }
+                            }}
+                            key={todoItem.id}
+                            id={todoItem.id}
                         />
                     })}
                 </TodoListContainer>
-                <Filter handleFilterSelect={handleFilterSelect}/>
+                <Filter handleFilterSelect={applyFilter}/>
                 </>
                 }
             </>

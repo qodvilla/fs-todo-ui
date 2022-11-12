@@ -1,5 +1,10 @@
+@font-face {
+  font-family: MarkPro;
+  src: url(./assets/fonts/Mark-Pro.ttf);
+}
 body {
   margin: 0;
   height: 100vh;
   background-color: #f6f7f8;
+  font-family: MarkPro;
 }
